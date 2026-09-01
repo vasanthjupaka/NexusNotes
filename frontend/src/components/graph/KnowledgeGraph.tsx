@@ -7,15 +7,11 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
-  Filter,
   Search,
   RefreshCw,
   Sparkles,
 } from 'lucide-react'
-import type { GraphNode, GraphEdge, Tag } from '@/types'
+import type { GraphNode, Tag } from '@/types'
 
 export const KnowledgeGraph: React.FC = () => {
   const navigate = useNavigate()
@@ -25,7 +21,7 @@ export const KnowledgeGraph: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null)
-  const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null)
+  const [_hoveredNodeId, setHoveredNodeId] = useState<number | null>(null)
 
   // Fetch graph data
   const { data: graphData, isLoading, refetch } = useQuery({

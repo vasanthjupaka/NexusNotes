@@ -7,21 +7,17 @@ import { autocompletion, CompletionContext, CompletionResult } from '@codemirror
 import { oneDark } from '@codemirror/theme-one-dark'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { notesApi, attachmentsApi } from '@/lib/api'
-import { useNoteStore, type SaveStatus } from '@/stores/noteStore'
+import { useNoteStore } from '@/stores/noteStore'
 import { useUIStore } from '@/stores/uiStore'
 import { EditorToolbar } from './EditorToolbar'
 import { MarkdownPreview } from './MarkdownPreview'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Star,
   CheckCircle2,
   RefreshCw,
   AlertCircle,
   FileText,
-  UploadCloud,
-  Trash2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
@@ -34,7 +30,6 @@ export const NoteEditor: React.FC = () => {
     saveStatus,
     setSaveStatus,
     setLastSavedAt,
-    isDirty,
     setIsDirty,
     updateActiveNoteContent,
     updateActiveNoteTitle,

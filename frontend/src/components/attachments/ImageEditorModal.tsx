@@ -15,10 +15,7 @@ import {
   FlipVertical,
   Pencil,
   Square,
-  Sun,
-  Contrast,
   Save,
-  Trash2,
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { attachmentsApi } from '@/lib/api'

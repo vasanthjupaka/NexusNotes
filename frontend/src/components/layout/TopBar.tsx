@@ -34,12 +34,9 @@ export const TopBar: React.FC = () => {
   const {
     toggleSidebar,
     toggleContextPanel,
-    isSidebarOpen,
-    isContextPanelOpen,
     theme,
     toggleTheme,
     setCommandPaletteOpen,
-    setSearchOpen,
   } = useUIStore()
   const { setActiveNote } = useNoteStore()
   const navigate = useNavigate()

@@ -3,7 +3,6 @@ import { TopBar } from '@/components/layout/TopBar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { CommandPalette } from '@/components/search/CommandPalette'
 import { useAuthStore } from '@/stores/authStore'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -12,9 +11,7 @@ import {
   Cloud,
   Database,
   Server,
-  Layers,
   CheckCircle2,
-  Lock,
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 

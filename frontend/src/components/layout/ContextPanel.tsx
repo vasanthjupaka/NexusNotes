@@ -3,26 +3,22 @@ import {
   Link2,
   Clock,
   Tag as TagIcon,
-  Image as ImageIcon,
   History,
   Info,
   ExternalLink,
   Plus,
-  Trash2,
   X,
-  Edit3,
 } from 'lucide-react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { notesApi, tagsApi, attachmentsApi } from '@/lib/api'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { notesApi, tagsApi } from '@/lib/api'
 import { useNoteStore } from '@/stores/noteStore'
 import { useUIStore } from '@/stores/uiStore'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import { formatDate, formatFileSize } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
-import type { BacklinkNote, Tag, Attachment } from '@/types'
+import type { BacklinkNote } from '@/types'
 
 export const ContextPanel: React.FC = () => {
   const queryClient = useQueryClient()
@@ -30,7 +26,6 @@ export const ContextPanel: React.FC = () => {
   const { activeNote, setActiveNote } = useNoteStore()
   const {
     isContextPanelOpen,
-    setImageEditorOpen,
     setRevisionHistoryOpen,
   } = useUIStore()
 

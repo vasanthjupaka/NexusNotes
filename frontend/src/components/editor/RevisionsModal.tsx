@@ -12,10 +12,10 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Clock, RotateCcw, AlertTriangle } from 'lucide-react'
+import { Clock, RotateCcw } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
-import type { NoteRevisionSummary, NoteRevisionDetail } from '@/types'
+import type { NoteRevisionSummary } from '@/types'
 
 export const RevisionsModal: React.FC = () => {
   const queryClient = useQueryClient()

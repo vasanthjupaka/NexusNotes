@@ -4,14 +4,11 @@ import {
   Plus,
   Network,
   Sun,
-  Moon,
   Trash2,
   Archive,
   Star,
   Search,
   Settings,
-  FolderPlus,
-  BookOpen,
 } from 'lucide-react'
 import {
   Dialog,

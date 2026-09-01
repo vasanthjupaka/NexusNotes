@@ -6,13 +6,7 @@ import {
   Tag as TagIcon,
   Archive,
   Trash2,
-  ChevronRight,
-  ChevronDown,
   Plus,
-  FolderPlus,
-  Network,
-  Settings,
-  MoreVertical,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { notesApi, foldersApi, tagsApi } from '@/lib/api'
@@ -20,7 +14,6 @@ import { useUIStore } from '@/stores/uiStore'
 import { useNoteStore } from '@/stores/noteStore'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -29,15 +22,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { useNavigate } from 'react-router-dom'
 import { cn, formatRelativeTime } from '@/lib/utils'
-import type { Folder, NoteSummary, Tag } from '@/types'
+import type { Folder, NoteSummary, Tag, NoteListResponse } from '@/types'
 
 export const Sidebar: React.FC = () => {
   const queryClient = useQueryClient()
@@ -56,19 +43,10 @@ export const Sidebar: React.FC = () => {
   // Modals
   const [isNewFolderOpen, setIsNewFolderOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
-  const [expandedFolders, setExpandedFolders] = useState<Record<number, boolean>>({})
 
   // Queries
-  const { data: notesData, isLoading: isNotesLoading } = useQuery({
+  const { data: notesData, isLoading: isNotesLoading } = useQuery<NoteListResponse>({
     queryKey: ['notes', sidebarView, selectedFolderId, selectedTagId],
-    queryQueryFn: () => {
-      if (sidebarView === 'favorites') return notesApi.list({ is_favorite: true })
-      if (sidebarView === 'archive') return notesApi.list({ is_archived: true })
-      if (sidebarView === 'trash') return notesApi.list({ is_deleted: true })
-      if (sidebarView === 'folders' && selectedFolderId) return notesApi.list({ folder_id: selectedFolderId })
-      if (sidebarView === 'tags' && selectedTagId) return notesApi.list({ tag_id: selectedTagId })
-      return notesApi.list({ is_deleted: false, is_archived: false })
-    },
     queryFn: () => {
       if (sidebarView === 'favorites') return notesApi.list({ is_favorite: true })
       if (sidebarView === 'archive') return notesApi.list({ is_archived: true })
@@ -107,10 +85,6 @@ export const Sidebar: React.FC = () => {
     } catch {
       // Error handled by Axios interceptor
     }
-  }
-
-  const toggleFolder = (folderId: number) => {
-    setExpandedFolders((prev) => ({ ...prev, [folderId]: !prev[folderId] }))
   }
 
   if (!isSidebarOpen) return null
