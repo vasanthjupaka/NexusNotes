@@ -1,0 +1,96 @@
+name: Docker Build, Scan & ECR Push
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_FRONTEND_REPO: nexusnotes/frontend
+  ECR_BACKEND_REPO: nexusnotes/backend
+  ECR_NGINX_REPO: nexusnotes/nginx
+
+jobs:
+  build-and-scan:
+    name: Build & Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      security-events: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
+
+      # ── Build Images ────────────────────────────────────────────────────────
+      - name: Build Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: false
+          load: true
+          tags: nexusnotes-backend:${{ github.sha }}
+
+      - name: Build Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: false
+          load: true
+          tags: nexusnotes-frontend:${{ github.sha }}
+
+      - name: Build Nginx Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nginx
+          push: false
+          load: true
+          tags: nexusnotes-nginx:${{ github.sha }}
+
+      # ── Trivy Security Vulnerability Scan ───────────────────────────────────
+      - name: Run Trivy Vulnerability Scanner on Backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'nexusnotes-backend:${{ github.sha }}'
+          format: 'table'
+          exit-code: '0' # Non-blocking for training demo, set to 1 for strict production
+          severity: 'CRITICAL,HIGH'
+
+      # ── Authenticate with AWS & Push to ECR ──────────────────────────────────
+      - name: Configure AWS Credentials
+        if: env.AWS_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+
+      - name: Log in to Amazon ECR
+        if: env.AWS_ROLE_ARN != ''
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Tag and Push Images to Amazon ECR
+        if: env.AWS_ROLE_ARN != ''
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          TAG: ${{ github.sha }}
+        run: |
+          docker tag nexusnotes-backend:$TAG $REGISTRY/$ECR_BACKEND_REPO:$TAG
+          docker tag nexusnotes-backend:$TAG $REGISTRY/$ECR_BACKEND_REPO:latest
+          docker push $REGISTRY/$ECR_BACKEND_REPO:$TAG
+          docker push $REGISTRY/$ECR_BACKEND_REPO:latest
+
+          docker tag nexusnotes-frontend:$TAG $REGISTRY/$ECR_FRONTEND_REPO:$TAG
+          docker tag nexusnotes-frontend:$TAG $REGISTRY/$ECR_FRONTEND_REPO:latest
+          docker push $REGISTRY/$ECR_FRONTEND_REPO:$TAG
+          docker push $REGISTRY/$ECR_FRONTEND_REPO:latest
+
+          docker tag nexusnotes-nginx:$TAG $REGISTRY/$ECR_NGINX_REPO:$TAG
+          docker tag nexusnotes-nginx:$TAG $REGISTRY/$ECR_NGINX_REPO:latest
+          docker push $REGISTRY/$ECR_NGINX_REPO:$TAG
+          docker push $REGISTRY/$ECR_NGINX_REPO:latest

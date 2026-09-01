@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Reverse Proxy
+  # ────────────────────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nexusnotes-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - nexus-network
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Frontend (Vite Dev Server with HMR)
+  # ────────────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: nexusnotes-frontend
+    restart: unless-stopped
+    command: npm run dev -- --host 0.0.0.0
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    networks:
+      - nexus-network
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Backend (FastAPI with hot reload)
+  # ────────────────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexusnotes-backend
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - APP_ENV=development
+      - DEBUG=true
+      - DATABASE_URL=mysql+aiomysql://nexusnotes:nexusnotes_dev_password@db:3306/nexusnotes
+      - JWT_SECRET=nexusnotes_dev_secret_key_change_in_production_32_bytes_min
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
+      - AWS_REGION=us-east-1
+      - AWS_S3_BUCKET=nexusnotes-assets
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin_secret
+      - S3_ENDPOINT_URL=http://minio:9000
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    networks:
+      - nexus-network
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # MySQL 8 Database
+  # ────────────────────────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: nexusnotes-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_dev_password
+      MYSQL_DATABASE: nexusnotes
+      MYSQL_USER: nexusnotes
+      MYSQL_PASSWORD: nexusnotes_dev_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-dev-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "nexusnotes", "-pnexusnotes_dev_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - nexus-network
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # MinIO (S3-compatible local object storage)
+  # ────────────────────────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: nexusnotes-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin_secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-dev-data:/data
+    networks:
+      - nexus-network
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # MinIO Bucket Initializer
+  # ────────────────────────────────────────────────────────────────────────────
+  minio-init:
+    image: minio/mc:latest
+    container_name: nexusnotes-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin_secret; do
+        echo 'Waiting for MinIO...'
+        sleep 2
+      done;
+      /usr/bin/mc mb --ignore-existing local/nexusnotes-assets;
+      echo 'MinIO bucket ready!';
+      exit 0;
+      "
+    networks:
+      - nexus-network
+
+networks:
+  nexus-network:
+    driver: bridge
+
+volumes:
+  mysql-dev-data:
+  minio-dev-data:

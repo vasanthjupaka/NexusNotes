@@ -1,0 +1,51 @@
+name: CD Deployment to AWS EC2
+
+on:
+  workflow_run:
+    workflows: ["Docker Build, Scan & ECR Push"]
+    branches: [ main ]
+    types: [ completed ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Amazon EC2
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH / SSM
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER || 'ubuntu' }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          if [ -z "$EC2_HOST" ] || [ -z "$EC2_SSH_KEY" ]; then
+            echo "ℹ️  EC2_HOST or EC2_SSH_KEY secret not set. Skipping live EC2 deployment."
+            echo "To enable automatic deployment, configure EC2_HOST, EC2_USER, and EC2_SSH_KEY in repository secrets."
+            exit 0
+          fi
+
+          echo "Configuring SSH key..."
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+
+          echo "Deploying update to EC2 instance..."
+          ssh $EC2_USER@$EC2_HOST << 'EOF'
+            set -e
+            cd /opt/nexusnotes || git clone https://github.com/vasanthjupaka/NexusNotes.git /opt/nexusnotes && cd /opt/nexusnotes
+            git pull origin main
+            docker compose -f docker-compose.prod.yml pull || true
+            docker compose -f docker-compose.prod.yml up -d --build
+            
+            # Health check verification
+            echo "Verifying deployment health..."
+            sleep 10
+            curl -f http://localhost/api/health || (echo "Healthcheck failed!" && exit 1)
+            echo "NexusNotes deployed successfully!"
+          EOF

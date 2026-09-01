@@ -1,0 +1,73 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-checks:
+    name: Backend Lint & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint with Ruff
+        working-directory: ./backend
+        run: ruff check .
+
+      - name: Check Formatting with Black
+        working-directory: ./backend
+        run: black --check .
+
+      - name: Run Pytest Unit Tests
+        working-directory: ./backend
+        env:
+          APP_ENV: testing
+          JWT_SECRET: test_secret_key_for_ci_pipeline_only_32_chars
+          DATABASE_URL: sqlite+aiosqlite:///./test.db
+        run: pytest -v
+
+  frontend-checks:
+    name: Frontend Lint & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: ./frontend/package.json
+
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: TypeScript Typecheck
+        working-directory: ./frontend
+        run: npm run typecheck
+
+      - name: Lint with ESLint
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Run Vitest Tests
+        working-directory: ./frontend
+        run: npm run test -- --run
