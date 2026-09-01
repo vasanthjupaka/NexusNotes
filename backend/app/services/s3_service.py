@@ -208,10 +208,10 @@ def validate_image_upload(
     Raises ValueError with a descriptive message on failure.
     """
     # 1. MIME type allowlist
-    if content_type not in settings.allowed_image_types:
+    if content_type not in settings.allowed_image_types_list:
         raise ValueError(
             f"File type '{content_type}' is not allowed. "
-            f"Allowed types: {', '.join(settings.allowed_image_types)}"
+            f"Allowed types: {', '.join(settings.allowed_image_types_list)}"
         )
 
     # 2. Extension check

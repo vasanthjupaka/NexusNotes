@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 
 from app.core.config import get_settings
 
@@ -24,9 +24,6 @@ settings = get_settings()
 # Password Hashing
 # ──────────────────────────────────────────────────────────────────────────────
 
-# bcrypt is intentionally slow to make brute-force attacks expensive
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(plain_password: str) -> str:
     """
@@ -34,7 +31,7 @@ def hash_password(plain_password: str) -> str:
 
     The salt is automatically generated and embedded in the hash.
     """
-    return pwd_context.hash(plain_password)
+    return bcrypt.hashpw(plain_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -43,7 +40,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
     Constant-time comparison prevents timing attacks.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 
 # ──────────────────────────────────────────────────────────────────────────────

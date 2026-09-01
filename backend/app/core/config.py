@@ -61,15 +61,28 @@ class Settings(BaseSettings):
     # ──────────────────────────────────────────────────────────────────────────
     # CORS
     # ──────────────────────────────────────────────────────────────────────────
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    cors_origins: str = "http://localhost:5173,http://localhost:3000"
 
     @field_validator("cors_origins", mode="before")
     @classmethod
-    def parse_cors_origins(cls, v: str | list[str]) -> list[str]:
-        """Allow comma-separated string or list."""
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
+    def parse_cors_origins(cls, v: str | list[str]) -> str:
+        """Normalise to a single comma-separated string for storage."""
+        if isinstance(v, list):
+            return ",".join(v)
+        # Strip surrounding JSON brackets if someone passed a JSON array
+        v = v.strip()
+        if v.startswith("[") and v.endswith("]"):
+            import json
+            try:
+                return ",".join(json.loads(v))
+            except Exception:
+                pass
         return v
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Return CORS origins as a list."""
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     # ──────────────────────────────────────────────────────────────────────────
     # AWS / S3
@@ -86,20 +99,25 @@ class Settings(BaseSettings):
     # File Uploads
     # ──────────────────────────────────────────────────────────────────────────
     max_upload_size: int = 10 * 1024 * 1024  # 10 MB
-    allowed_image_types: list[str] = [
-        "image/jpeg",
-        "image/png",
-        "image/gif",
-        "image/webp",
-        "image/svg+xml",
-    ]
+    allowed_image_types: str = "image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
 
     @field_validator("allowed_image_types", mode="before")
     @classmethod
-    def parse_allowed_image_types(cls, v: str | list[str]) -> list[str]:
-        if isinstance(v, str):
-            return [t.strip() for t in v.split(",")]
+    def parse_allowed_image_types(cls, v: str | list[str]) -> str:
+        if isinstance(v, list):
+            return ",".join(v)
+        v = v.strip()
+        if v.startswith("[") and v.endswith("]"):
+            import json
+            try:
+                return ",".join(json.loads(v))
+            except Exception:
+                pass
         return v
+
+    @property
+    def allowed_image_types_list(self) -> list[str]:
+        return [t.strip() for t in self.allowed_image_types.split(",") if t.strip()]
 
     # ──────────────────────────────────────────────────────────────────────────
     # Logging

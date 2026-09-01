@@ -106,7 +106,7 @@ API requests are rate limited to 100 requests per 60 seconds by default.
     # CORS — restrict to configured origins
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
+        allow_origins=settings.cors_origins_list,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["*"],
@@ -136,7 +136,7 @@ API requests are rate limited to 100 requests per 60 seconds by default.
     logger.info(
         "nexusnotes_app_created",
         routes=len(app.routes),
-        cors_origins=settings.cors_origins,
+        cors_origins=settings.cors_origins_list,
     )
 
     return app

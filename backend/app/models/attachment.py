@@ -31,7 +31,7 @@ class Attachment(Base):
     __table_args__ = (
         Index("idx_attachments_user_id", "user_id"),
         Index("idx_attachments_note_id", "note_id"),
-        Index("idx_attachments_object_key", "object_key"),
+        Index("idx_attachments_object_key", "object_key", mysql_length=191),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

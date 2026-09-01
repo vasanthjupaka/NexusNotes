@@ -1,0 +1,7 @@
+# Development overrides for NexusNotes
+# This file overrides docker-compose.yml for local development
+
+services:
+  db:
+    ports:
+      - "3307:3306"

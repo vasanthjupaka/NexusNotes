@@ -1,4 +1,4 @@
-version: '3.8'
+# Docker Compose configuration for NexusNotes
 
 services:
   # ────────────────────────────────────────────────────────────────────────────
@@ -54,16 +54,16 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - APP_ENV=development
-      - DEBUG=true
-      - DATABASE_URL=mysql+aiomysql://nexusnotes:nexusnotes_dev_password@db:3306/nexusnotes
-      - JWT_SECRET=nexusnotes_dev_secret_key_change_in_production_32_bytes_min
-      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
-      - AWS_REGION=us-east-1
-      - AWS_S3_BUCKET=nexusnotes-assets
-      - AWS_ACCESS_KEY_ID=minioadmin
-      - AWS_SECRET_ACCESS_KEY=minioadmin_secret
-      - S3_ENDPOINT_URL=http://minio:9000
+      APP_ENV: development
+      DEBUG: "true"
+      DATABASE_URL: mysql+aiomysql://nexusnotes:[REDACTED]@db:3306/nexusnotes
+      JWT_SECRET: nexusnotes_dev_secret_key_change_in_production_32_bytes_min
+      AWS_REGION: us-east-1
+      AWS_S3_BUCKET: nexusnotes-assets
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin_secret
+      S3_ENDPOINT_URL: http://minio:9000
+      LOG_LEVEL: INFO
     depends_on:
       db:
         condition: service_healthy
@@ -85,7 +85,7 @@ services:
       MYSQL_USER: nexusnotes
       MYSQL_PASSWORD: nexusnotes_dev_password
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql-dev-data:/var/lib/mysql
     healthcheck:
