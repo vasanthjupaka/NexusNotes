@@ -46,7 +46,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Install only runtime system dependencies (not build tools)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libmysqlclient21 \
+    libmariadb3 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
