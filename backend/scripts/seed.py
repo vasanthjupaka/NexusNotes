@@ -269,6 +269,15 @@ async def seed() -> None:
     print("🌱 Seeding database...")
     settings = get_settings()
 
+    # Ensure all tables exist before querying or inserting data
+    from app.models import Base
+    from app.db.session import engine
+
+    print("  📦 Ensuring all database tables exist...")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    print("  ✅ Database schema verified.")
+
     async with AsyncSessionLocal() as db:
         # ── User ──────────────────────────────────────────────────────────────
         from sqlalchemy import select
