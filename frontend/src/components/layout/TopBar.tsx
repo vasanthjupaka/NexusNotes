@@ -100,28 +100,28 @@ export const TopBar: React.FC = () => {
       </div>
 
       {/* Middle section: Search & Command Palette trigger */}
-      <div className="flex items-center gap-2 max-w-md w-full mx-2 sm:mx-6">
+      <div className="flex items-center gap-2 max-w-md w-full mx-1 sm:mx-4 min-w-0 flex-1">
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg border border-border/80 bg-background/50 hover:bg-accent/60 text-xs text-muted-foreground transition-all shadow-inner group"
+          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-border/80 bg-background/50 hover:bg-accent/60 text-xs text-muted-foreground transition-all shadow-inner group min-w-0"
         >
-          <span className="flex items-center gap-2 truncate">
-            <Search className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+          <span className="flex items-center gap-1.5 truncate">
+            <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
             <span className="hidden md:inline">Quick search or command...</span>
-            <span className="md:hidden">Search...</span>
+            <span className="md:hidden truncate">Search...</span>
           </span>
-          <kbd className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground">
+          <kbd className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground shrink-0">
             <Command className="h-2.5 w-2.5" /> K
           </kbd>
         </button>
       </div>
 
       {/* Right section: Actions & User menu */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         <Button
           onClick={handleCreateNote}
           size="sm"
-          className="h-8 gap-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-sm font-medium"
+          className="h-8 gap-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-sm font-medium px-2.5 sm:px-3"
         >
           <Plus className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">New Note</span>
@@ -132,7 +132,7 @@ export const TopBar: React.FC = () => {
           size="icon-sm"
           onClick={() => navigate('/graph')}
           title="Open Knowledge Graph"
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground hidden sm:flex"
         >
           <Network className="h-4 w-4" />
         </Button>
@@ -151,8 +151,8 @@ export const TopBar: React.FC = () => {
           variant="ghost"
           size="icon-sm"
           onClick={toggleContextPanel}
-          title="Toggle Context Panel"
-          className="text-muted-foreground hover:text-foreground hidden lg:flex"
+          title="Toggle Note Details"
+          className="text-muted-foreground hover:text-foreground flex"
         >
           <PanelRight className="h-4 w-4" />
         </Button>

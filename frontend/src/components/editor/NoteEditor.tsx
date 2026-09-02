@@ -340,12 +340,12 @@ export const NoteEditor: React.FC = () => {
     >
       {/* Prominent Banner when Note is in Trash */}
       {activeNote.is_deleted && (
-        <div className="bg-amber-500/10 border-b border-amber-500/30 px-6 py-2.5 flex items-center justify-between gap-4 shrink-0">
+        <div className="bg-amber-500/10 border-b border-amber-500/30 px-3 sm:px-6 py-2 sm:py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2 text-xs text-amber-500 font-medium">
             <Trash2 className="h-4 w-4 shrink-0" />
             <span>This note is in the Trash. It is read-only until restored.</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <Button
               size="sm"
               variant="outline"
@@ -369,7 +369,7 @@ export const NoteEditor: React.FC = () => {
       )}
 
       {/* Top Note Header with Title, Favorite & Autosave status */}
-      <div className="px-6 py-3 border-b border-border/80 bg-card/20 flex items-center justify-between gap-4 shrink-0">
+      <div className="px-3 sm:px-6 py-2 sm:py-3 border-b border-border/80 bg-card/20 flex items-center justify-between gap-2 sm:gap-4 shrink-0">
         <div className="flex items-center gap-2 flex-1 max-w-2xl">
           <button
             onClick={handleToggleFavorite}
@@ -469,14 +469,14 @@ export const NoteEditor: React.FC = () => {
       />
 
       {/* Main Editor / Preview Split Pane */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Editor Pane */}
         {(editorMode === 'edit' || editorMode === 'split') && (
           <div
             ref={editorContainerRef}
             className={cn(
               'h-full overflow-hidden flex-1 bg-background/50',
-              editorMode === 'split' && 'border-r border-border/80'
+              editorMode === 'split' && 'border-b md:border-b-0 md:border-r border-border/80'
             )}
           />
         )}

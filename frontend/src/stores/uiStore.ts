@@ -31,9 +31,12 @@ interface UIState {
   toggleTheme: () => void
 }
 
+const isDesktop = typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
+const isTablet = typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+
 export const useUIStore = create<UIState>((set) => ({
-  isSidebarOpen: true,
-  isContextPanelOpen: true,
+  isSidebarOpen: isTablet,
+  isContextPanelOpen: isDesktop,
   sidebarView: 'all',
   selectedFolderId: null,
   selectedTagId: null,

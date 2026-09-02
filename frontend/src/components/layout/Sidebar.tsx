@@ -9,6 +9,7 @@ import {
   Plus,
   RotateCcw,
   XCircle,
+  X,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { notesApi, foldersApi, tagsApi } from '@/lib/api'
@@ -33,6 +34,7 @@ export const Sidebar: React.FC = () => {
   const navigate = useNavigate()
   const {
     isSidebarOpen,
+    setSidebarOpen,
     sidebarView,
     setSidebarView,
     selectedFolderId,
@@ -106,6 +108,9 @@ export const Sidebar: React.FC = () => {
     try {
       const fullNote = await notesApi.get(summary.id)
       setActiveNote(fullNote)
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        setSidebarOpen(false)
+      }
       navigate('/')
     } catch {
       // Error handled by Axios interceptor
@@ -115,7 +120,26 @@ export const Sidebar: React.FC = () => {
   if (!isSidebarOpen) return null
 
   return (
-    <aside className="w-72 border-r border-border bg-card/40 backdrop-blur-md flex flex-col h-[calc(100vh-3.5rem)] select-none shrink-0 transition-all z-20">
+    <>
+      {/* Mobile Backdrop */}
+      <div
+        className="fixed inset-0 top-14 bg-background/80 backdrop-blur-sm z-30 md:hidden"
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className="w-72 border-r border-border bg-card/95 md:bg-card/40 backdrop-blur-md flex flex-col h-[calc(100vh-3.5rem)] select-none shrink-0 transition-all fixed md:static inset-y-0 left-0 top-14 shadow-2xl md:shadow-none z-40 md:z-20">
+        {/* Mobile Header with Close Button */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 md:hidden">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Navigation</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       {/* View Switcher Pills */}
       <div className="p-3 border-b border-border/60 flex flex-col gap-1">
         <button
@@ -413,5 +437,6 @@ export const Sidebar: React.FC = () => {
         </DialogContent>
       </Dialog>
     </aside>
+    </>
   )
 }

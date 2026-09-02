@@ -28,6 +28,7 @@ export const ContextPanel: React.FC = () => {
   const { activeNote, setActiveNote } = useNoteStore()
   const {
     isContextPanelOpen,
+    setContextPanelOpen,
     setRevisionHistoryOpen,
   } = useUIStore()
 
@@ -129,17 +130,37 @@ export const ContextPanel: React.FC = () => {
   if (!isContextPanelOpen || !activeNote) return null
 
   return (
-    <aside className="w-64 border-l border-border bg-card/30 backdrop-blur-md flex flex-col h-[calc(100vh-3.5rem)] select-none shrink-0 transition-all z-20 text-xs">
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-5">
-          {/* Backlinks Section */}
-          <div>
-            <div className="flex items-center justify-between font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              <div className="flex items-center gap-1.5">
-                <Link2 className="h-3.5 w-3.5 text-primary" />
-                <span>Backlinks ({backlinks.length})</span>
+    <>
+      {/* Mobile/Tablet Backdrop */}
+      <div
+        className="fixed inset-0 top-14 bg-background/80 backdrop-blur-sm z-30 lg:hidden"
+        onClick={() => setContextPanelOpen(false)}
+      />
+
+      <aside className="w-72 border-l border-border bg-card/95 lg:bg-card/30 backdrop-blur-md flex flex-col h-[calc(100vh-3.5rem)] select-none shrink-0 transition-all fixed lg:static inset-y-0 right-0 top-14 shadow-2xl lg:shadow-none z-40 lg:z-20 text-xs">
+        {/* Mobile Header with Close Button */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 lg:hidden">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Note Details</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+            onClick={() => setContextPanelOpen(false)}
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+
+        <ScrollArea className="flex-1">
+          <div className="p-4 space-y-5">
+            {/* Backlinks Section */}
+            <div>
+              <div className="flex items-center justify-between font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Link2 className="h-3.5 w-3.5 text-primary" />
+                  <span>Backlinks ({backlinks.length})</span>
+                </div>
               </div>
-            </div>
 
             {backlinks.length === 0 ? (
               <p className="text-muted-foreground/60 italic text-[11px] py-1">
@@ -317,5 +338,6 @@ export const ContextPanel: React.FC = () => {
         </div>
       </ScrollArea>
     </aside>
+    </>
   )
 }
