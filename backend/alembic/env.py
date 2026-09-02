@@ -64,11 +64,15 @@ def do_run_migrations(connection):
 
 async def run_async_migrations() -> None:
     """Run migrations using async engine."""
-    # Use pymysql (sync) driver for Alembic — aiomysql is for the app
-    sync_url = settings.database_url.replace("mysql+aiomysql://", "mysql+pymysql://")
+    # Ensure URL uses async driver (aiomysql) required by async_engine_from_config
+    async_url = settings.database_url
+    if "mysql+pymysql://" in async_url:
+        async_url = async_url.replace("mysql+pymysql://", "mysql+aiomysql://")
+    elif "mysql://" in async_url and "mysql+" not in async_url:
+        async_url = async_url.replace("mysql://", "mysql+aiomysql://")
 
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = sync_url
+    configuration["sqlalchemy.url"] = async_url
 
     connectable = async_engine_from_config(
         configuration,
