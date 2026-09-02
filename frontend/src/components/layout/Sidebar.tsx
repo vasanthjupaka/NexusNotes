@@ -7,6 +7,8 @@ import {
   Archive,
   Trash2,
   Plus,
+  RotateCcw,
+  XCircle,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { notesApi, foldersApi, tagsApi } from '@/lib/api'
@@ -74,6 +76,29 @@ export const Sidebar: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['folders'] })
       setIsNewFolderOpen(false)
       setNewFolderName('')
+    },
+  })
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: (id: number) => notesApi.delete(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+      if (activeNoteId === id) setActiveNote(null)
+    },
+  })
+
+  const restoreNoteMutation = useMutation({
+    mutationFn: (id: number) => notesApi.restore(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+    },
+  })
+
+  const permanentDeleteMutation = useMutation({
+    mutationFn: (id: number) => notesApi.permanentDelete(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+      if (activeNoteId === id) setActiveNote(null)
     },
   })
 
@@ -225,7 +250,20 @@ export const Sidebar: React.FC = () => {
 
       {/* Notes List Header */}
       <div className="px-3 py-2 border-t border-b border-border/60 bg-muted/20 flex items-center justify-between text-xs font-semibold text-muted-foreground">
-        <span>NOTES ({notesData?.items.length || 0})</span>
+        <span>
+          {sidebarView === 'trash'
+            ? 'TRASH'
+            : sidebarView === 'favorites'
+            ? 'FAVORITES'
+            : sidebarView === 'archive'
+            ? 'ARCHIVED'
+            : sidebarView === 'folders'
+            ? 'FOLDER NOTES'
+            : sidebarView === 'tags'
+            ? 'TAGGED NOTES'
+            : 'ALL NOTES'}{' '}
+          ({notesData?.items.length || 0})
+        </span>
       </div>
 
       {/* Notes List */}
@@ -240,8 +278,14 @@ export const Sidebar: React.FC = () => {
           ) : notesData?.items.length === 0 ? (
             <div className="py-8 text-center px-4">
               <FileText className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-              <p className="text-xs font-medium text-muted-foreground">No notes in this view</p>
-              <p className="text-[10px] text-muted-foreground/60 mt-1">Create a note to start building your knowledge base.</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                {sidebarView === 'trash' ? 'Trash is empty' : 'No notes in this view'}
+              </p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">
+                {sidebarView === 'trash'
+                  ? 'Deleted notes will appear here.'
+                  : 'Create a note to start building your knowledge base.'}
+              </p>
             </div>
           ) : (
             notesData?.items.map((note: NoteSummary) => {
@@ -266,7 +310,21 @@ export const Sidebar: React.FC = () => {
                     >
                       {note.title || 'Untitled Note'}
                     </h4>
-                    {note.is_favorite && <Star className="h-3 w-3 text-amber-500 fill-amber-500 shrink-0" />}
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      {note.is_favorite && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}
+                      {sidebarView !== 'trash' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            deleteNoteMutation.mutate(note.id)
+                          }}
+                          title="Move to Trash"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:text-destructive text-muted-foreground"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {note.excerpt && (
@@ -285,6 +343,36 @@ export const Sidebar: React.FC = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Clearly visible action buttons in Trash view */}
+                  {sidebarView === 'trash' && (
+                    <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-border/40">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          restoreNoteMutation.mutate(note.id)
+                        }}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-[10px] font-medium transition-colors"
+                        title="Restore note to All Notes"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Restore
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (window.confirm('Permanently delete this note? This action cannot be undone.')) {
+                            permanentDeleteMutation.mutate(note.id)
+                          }
+                        }}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded bg-destructive/15 hover:bg-destructive/25 text-destructive text-[10px] font-medium transition-colors"
+                        title="Delete permanently from database"
+                      >
+                        <XCircle className="h-3 w-3" />
+                        Delete Forever
+                      </button>
+                    </div>
+                  )}
                 </div>
               )
             })

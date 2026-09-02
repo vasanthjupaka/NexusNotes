@@ -13,11 +13,24 @@ import { EditorToolbar } from './EditorToolbar'
 import { MarkdownPreview } from './MarkdownPreview'
 import { Button } from '@/components/ui/button'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   Star,
   CheckCircle2,
   RefreshCw,
   AlertCircle,
   FileText,
+  MoreHorizontal,
+  Trash2,
+  Archive,
+  ArchiveRestore,
+  RotateCcw,
+  XCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
@@ -70,7 +83,7 @@ export const NoteEditor: React.FC = () => {
   // Trigger debounced save
   const triggerDebouncedSave = useCallback(
     (title: string, content: string) => {
-      if (!activeNote) return
+      if (!activeNote || activeNote.is_deleted) return
 
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
@@ -136,8 +149,9 @@ export const NoteEditor: React.FC = () => {
         cmPlaceholder('Type markdown or [[ to link notes...'),
         autocompletion({ override: [wikiLinkCompletions] }),
         keymap.of([...defaultKeymap, ...historyKeymap]),
+        EditorView.editable.of(!activeNote.is_deleted),
         EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
+          if (update.docChanged && !activeNote.is_deleted) {
             const newContent = update.state.doc.toString()
             updateActiveNoteContent(newContent)
             triggerDebouncedSave(activeNote.title, newContent)
@@ -210,6 +224,59 @@ export const NoteEditor: React.FC = () => {
     }
   }
 
+  // Move note to trash
+  const handleDeleteNote = async () => {
+    if (!activeNote) return
+    try {
+      await notesApi.delete(activeNote.id)
+      setActiveNote(null)
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+      toast({ title: 'Note moved to Trash', description: 'You can restore it from the Trash view.' })
+    } catch {
+      toast({ variant: 'destructive', title: 'Failed to delete note' })
+    }
+  }
+
+  // Toggle archive
+  const handleToggleArchive = async () => {
+    if (!activeNote) return
+    try {
+      const updated = await notesApi.update(activeNote.id, { is_archived: !activeNote.is_archived })
+      setActiveNote(updated)
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+      toast({ title: activeNote.is_archived ? 'Note unarchived' : 'Note archived' })
+    } catch {
+      toast({ variant: 'destructive', title: 'Failed to archive note' })
+    }
+  }
+
+  // Restore note from trash
+  const handleRestoreNote = async () => {
+    if (!activeNote) return
+    try {
+      const restored = await notesApi.restore(activeNote.id)
+      setActiveNote(restored)
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+      toast({ title: 'Note restored', description: 'Moved back to All Notes.' })
+    } catch {
+      toast({ variant: 'destructive', title: 'Failed to restore note' })
+    }
+  }
+
+  // Delete note forever
+  const handlePermanentDeleteNote = async () => {
+    if (!activeNote) return
+    if (!window.confirm('Permanently delete this note? This action cannot be undone.')) return
+    try {
+      await notesApi.permanentDelete(activeNote.id)
+      setActiveNote(null)
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+      toast({ title: 'Note permanently deleted' })
+    } catch {
+      toast({ variant: 'destructive', title: 'Failed to delete note permanently' })
+    }
+  }
+
   // Image Upload handler
   const handleImageUpload = async (file: File) => {
     if (!activeNote) return
@@ -271,13 +338,44 @@ export const NoteEditor: React.FC = () => {
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
     >
+      {/* Prominent Banner when Note is in Trash */}
+      {activeNote.is_deleted && (
+        <div className="bg-amber-500/10 border-b border-amber-500/30 px-6 py-2.5 flex items-center justify-between gap-4 shrink-0">
+          <div className="flex items-center gap-2 text-xs text-amber-500 font-medium">
+            <Trash2 className="h-4 w-4 shrink-0" />
+            <span>This note is in the Trash. It is read-only until restored.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/15"
+              onClick={handleRestoreNote}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Restore Note
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="h-7 text-xs gap-1.5"
+              onClick={handlePermanentDeleteNote}
+            >
+              <XCircle className="h-3.5 w-3.5" />
+              Delete Forever
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Top Note Header with Title, Favorite & Autosave status */}
       <div className="px-6 py-3 border-b border-border/80 bg-card/20 flex items-center justify-between gap-4 shrink-0">
         <div className="flex items-center gap-2 flex-1 max-w-2xl">
           <button
             onClick={handleToggleFavorite}
+            disabled={activeNote.is_deleted}
             title={activeNote.is_favorite ? 'Remove favorite' : 'Mark as favorite'}
-            className="text-muted-foreground hover:text-amber-500 transition-colors p-1"
+            className="text-muted-foreground hover:text-amber-500 transition-colors p-1 disabled:opacity-40"
           >
             <Star
               className={cn(
@@ -290,8 +388,9 @@ export const NoteEditor: React.FC = () => {
             type="text"
             value={activeNote.title}
             onChange={handleTitleChange}
+            disabled={activeNote.is_deleted}
             placeholder="Note title..."
-            className="font-bold text-lg bg-transparent border-none focus:outline-none focus:ring-0 text-foreground w-full tracking-tight"
+            className="font-bold text-lg bg-transparent border-none focus:outline-none focus:ring-0 text-foreground w-full tracking-tight disabled:opacity-75"
           />
         </div>
 
@@ -322,6 +421,35 @@ export const NoteEditor: React.FC = () => {
             </span>
           )}
         </div>
+
+        {/* More options dropdown: Archive & Delete */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+              title="More options"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={handleToggleArchive} className="gap-2">
+              {activeNote.is_archived
+                ? <><ArchiveRestore className="h-3.5 w-3.5" /> Unarchive</>
+                : <><Archive className="h-3.5 w-3.5" /> Archive</>}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleDeleteNote}
+              className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Move to Trash
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Editor Toolbar */}

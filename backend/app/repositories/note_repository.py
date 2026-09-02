@@ -119,6 +119,11 @@ class NoteRepository:
         await self.db.flush()
         return note
 
+    async def hard_delete(self, note: Note) -> None:
+        """Permanently remove the note row from the database."""
+        await self.db.delete(note)
+        await self.db.flush()
+
     async def restore(self, note: Note) -> Note:
         note.is_deleted = False
         note.deleted_at = None

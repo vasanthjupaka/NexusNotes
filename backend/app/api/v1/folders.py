@@ -39,7 +39,11 @@ async def create_folder(
     folder = Folder(user_id=current_user.id, name=data.name, parent_id=data.parent_id)
     db.add(folder)
     await db.flush()
-    await db.refresh(folder)
+    # Re-fetch with children eagerly loaded to avoid MissingGreenlet on lazy access.
+    result = await db.execute(
+        select(Folder).where(Folder.id == folder.id).options(selectinload(Folder.children))
+    )
+    folder = result.scalar_one()
     return FolderResponse.model_validate(folder)
 
 
@@ -63,7 +67,11 @@ async def update_folder(
         folder.parent_id = data.parent_id
 
     await db.flush()
-    await db.refresh(folder)
+    # Re-fetch with children eagerly loaded to avoid MissingGreenlet on lazy access.
+    result = await db.execute(
+        select(Folder).where(Folder.id == folder.id).options(selectinload(Folder.children))
+    )
+    folder = result.scalar_one()
     return FolderResponse.model_validate(folder)
 
 

@@ -37,6 +37,7 @@ export const TopBar: React.FC = () => {
     theme,
     toggleTheme,
     setCommandPaletteOpen,
+    selectedFolderId,
   } = useUIStore()
   const { setActiveNote } = useNoteStore()
   const navigate = useNavigate()
@@ -47,6 +48,8 @@ export const TopBar: React.FC = () => {
       const newNote = await notesApi.create({
         title: 'Untitled Note',
         content: '# Untitled Note\n\nStart writing your thoughts here...',
+        // Respect whichever folder is currently selected in the sidebar
+        folder_id: selectedFolderId ?? undefined,
       })
       setActiveNote(newNote)
       navigate('/')

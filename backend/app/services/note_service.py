@@ -80,6 +80,9 @@ class NoteService:
         # Create initial revision
         await self.repo.create_revision(note.id, data.content, user.id)
 
+        # Re-fetch with eagerly-loaded relationships (tags) to avoid
+        # MissingGreenlet from lazy-loading inside async context.
+        note = await self.repo.get_by_id(note.id, user.id)
         return NoteDetail.model_validate(note)
 
     async def update_note(self, note_id: int, user: User, data: NoteUpdate) -> NoteDetail:
@@ -109,10 +112,21 @@ class NoteService:
             await self._process_wiki_links(note, user.id)
             await self.repo.create_revision(note.id, data.content, user.id)
 
+        # Re-fetch with eagerly-loaded relationships (tags) to avoid
+        # MissingGreenlet from lazy-loading inside async context.
+        note = await self.repo.get_by_id(note.id, user.id)
         return NoteDetail.model_validate(note)
 
     async def get_note(self, note_id: int, user_id: int) -> NoteDetail:
-        note = await self.repo.get_by_id(note_id, user_id)
+        # Use a query that includes deleted notes so trash items can be viewed.
+        from sqlalchemy import select as sa_select
+        from sqlalchemy.orm import selectinload as sel
+        result = await self.db.execute(
+            sa_select(Note)
+            .where(Note.id == note_id, Note.user_id == user_id)
+            .options(sel(Note.tags))
+        )
+        note = result.scalar_one_or_none()
         self._assert_ownership(note, user_id)
         return NoteDetail.model_validate(note)
 
@@ -151,6 +165,21 @@ class NoteService:
         self._assert_ownership(note, user_id)
         await self.repo.soft_delete(note)
 
+    async def permanent_delete_note(self, note_id: int, user_id: int) -> None:
+        """Hard-delete a note (must already be in trash). Irreversible."""
+        # Use a raw query to find the note even when is_deleted=True
+        from sqlalchemy import select as sa_select
+        from app.models.note import Note as NoteModel
+        result = await self.db.execute(
+            sa_select(NoteModel).where(
+                NoteModel.id == note_id,
+                NoteModel.user_id == user_id,
+            )
+        )
+        note = result.scalar_one_or_none()
+        self._assert_ownership(note, user_id)
+        await self.repo.hard_delete(note)
+
     async def restore_note(self, note_id: int, user_id: int) -> NoteDetail:
         # For trash we need to also find deleted notes
         from sqlalchemy import select
@@ -165,6 +194,7 @@ class NoteService:
         note = result.scalar_one_or_none()
         self._assert_ownership(note, user_id)
         note = await self.repo.restore(note)
+        note = await self.repo.get_by_id(note.id, user_id)
         return NoteDetail.model_validate(note)
 
     async def get_backlinks(self, note_id: int, user_id: int) -> list[BacklinkNote]:

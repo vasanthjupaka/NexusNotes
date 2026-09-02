@@ -12,6 +12,12 @@ export default defineConfig({
     server: {
         host: '0.0.0.0',
         port: 5173,
+        // Enable polling so HMR works on Windows Docker bind mounts
+        // (inotify events don't propagate from Windows host into Linux containers)
+        watch: {
+            usePolling: true,
+            interval: 500,
+        },
         proxy: {
             // Proxy API requests to the FastAPI backend during development
             '/api': {

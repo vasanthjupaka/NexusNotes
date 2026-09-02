@@ -56,7 +56,7 @@ services:
     environment:
       APP_ENV: development
       DEBUG: "true"
-      DATABASE_URL: mysql+aiomysql://nexusnotes:[REDACTED]@db:3306/nexusnotes
+      DATABASE_URL: mysql+aiomysql://nexusnotes:nexusnotes_dev_password@db:3306/nexusnotes
       JWT_SECRET: nexusnotes_dev_secret_key_change_in_production_32_bytes_min
       AWS_REGION: us-east-1
       AWS_S3_BUCKET: nexusnotes-assets

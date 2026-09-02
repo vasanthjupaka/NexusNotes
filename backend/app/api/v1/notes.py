@@ -105,6 +105,18 @@ async def restore_note(
     return await service.restore_note(note_id, current_user.id)
 
 
+@router.delete("/{note_id}/permanent", response_model=MessageResponse, summary="Permanently delete note")
+async def permanent_delete_note(
+    note_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> MessageResponse:
+    """Hard-delete a note from the database. This action is irreversible."""
+    service = NoteService(db)
+    await service.permanent_delete_note(note_id, current_user.id)
+    return MessageResponse(message="Note permanently deleted")
+
+
 @router.get("/{note_id}/backlinks", response_model=list[BacklinkNote], summary="Get backlinks")
 async def get_backlinks(
     note_id: int,

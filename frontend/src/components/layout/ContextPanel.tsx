@@ -8,9 +8,11 @@ import {
   ExternalLink,
   Plus,
   X,
+  Folder as FolderIcon,
+  ChevronDown,
 } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { notesApi, tagsApi } from '@/lib/api'
+import { notesApi, tagsApi, foldersApi } from '@/lib/api'
 import { useNoteStore } from '@/stores/noteStore'
 import { useUIStore } from '@/stores/uiStore'
 import { Button } from '@/components/ui/button'
@@ -43,6 +45,12 @@ export const ContextPanel: React.FC = () => {
   const { data: allTags = [] } = useQuery({
     queryKey: ['tags'],
     queryFn: tagsApi.list,
+  })
+
+  // Fetch all folders for folder picker
+  const { data: allFolders = [] } = useQuery({
+    queryKey: ['folders'],
+    queryFn: foldersApi.list,
   })
 
   const wordCount = activeNote?.content
@@ -104,6 +112,17 @@ export const ContextPanel: React.FC = () => {
         title: 'Tag creation failed',
         description: err.response?.data?.detail || 'Tag already exists or is invalid',
       })
+    }
+  }
+
+  const handleChangeFolder = async (folderId: number | null) => {
+    if (!activeNote) return
+    try {
+      const updated = await notesApi.update(activeNote.id, { folder_id: folderId })
+      setActiveNote(updated)
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+    } catch {
+      toast({ variant: 'destructive', title: 'Failed to move note to folder' })
     }
   }
 
@@ -215,6 +234,32 @@ export const ContextPanel: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          <Separator />
+
+          {/* Folder Assignment Section */}
+          <div>
+            <div className="flex items-center gap-1.5 font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              <FolderIcon className="h-3.5 w-3.5 text-amber-400" />
+              <span>Folder</span>
+            </div>
+
+            <div className="relative">
+              <select
+                value={activeNote.folder_id ?? ''}
+                onChange={(e) => handleChangeFolder(e.target.value ? Number(e.target.value) : null)}
+                className="w-full appearance-none bg-muted/40 border border-border rounded-md px-2.5 py-1.5 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary pr-7 cursor-pointer"
+              >
+                <option value="">— No folder —</option>
+                {allFolders.map((f: any) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+            </div>
           </div>
 
           <Separator />
