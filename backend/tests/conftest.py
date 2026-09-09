@@ -15,6 +15,11 @@ from app.main import create_app
 from app.models.user import User
 from app.core.security import hash_password, create_access_token
 
+# Clear settings cache so CI environment variables (JWT_SECRET, DATABASE_URL, etc.)
+# are picked up instead of any stale module-level cached instance.
+get_settings.cache_clear()
+
+
 # Use SQLite in-memory for fast, isolated unit tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 

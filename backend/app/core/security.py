@@ -18,8 +18,6 @@ import bcrypt
 
 from app.core.config import get_settings
 
-settings = get_settings()
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Password Hashing
 # ──────────────────────────────────────────────────────────────────────────────
@@ -65,6 +63,7 @@ def create_access_token(
     Returns:
         Signed JWT string.
     """
+    settings = get_settings()
     now = datetime.now(timezone.utc)
     expire = now + timedelta(minutes=settings.jwt_access_token_expire_minutes)
 
@@ -91,6 +90,7 @@ def create_refresh_token(subject: str | int) -> str:
 
     Refresh tokens should be stored in httpOnly cookies.
     """
+    settings = get_settings()
     now = datetime.now(timezone.utc)
     expire = now + timedelta(days=settings.jwt_refresh_token_expire_days)
 
@@ -115,6 +115,7 @@ def decode_token(token: str) -> dict[str, Any]:
     Raises:
         JWTError: If the token is invalid, expired, or tampered with.
     """
+    settings = get_settings()
     return jwt.decode(
         token,
         settings.jwt_secret,
