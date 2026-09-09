@@ -57,7 +57,7 @@ export const TopBar: React.FC = () => {
         title: 'Note created',
         description: 'New blank note ready for editing.',
       })
-    } catch (err) {
+    } catch (_err) {
       toast({
         variant: 'destructive',
         title: 'Failed to create note',
