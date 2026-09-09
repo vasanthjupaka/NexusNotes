@@ -11,23 +11,20 @@ Usage:
 """
 
 import asyncio
-import sys
 import os
+import sys
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.security import hash_password
 from app.db.session import AsyncSessionLocal
 from app.models.folder import Folder
 from app.models.note import Note
-from app.models.note_link import NoteLink
 from app.models.tag import Tag, note_tags
 from app.models.user import User
-
 
 SEED_USER = {
     "username": "demo",
@@ -267,11 +264,11 @@ class NoteService:
 
 async def seed() -> None:
     print("🌱 Seeding database...")
-    settings = get_settings()
+    get_settings()
 
     # Ensure all tables exist before querying or inserting data
-    from app.models import Base
     from app.db.session import engine
+    from app.models import Base
 
     print("  📦 Ensuring all database tables exist...")
     async with engine.begin() as conn:
@@ -281,12 +278,15 @@ async def seed() -> None:
     async with AsyncSessionLocal() as db:
         # ── User ──────────────────────────────────────────────────────────────
         from sqlalchemy import select
+
         existing_user = (
             await db.execute(select(User).where(User.email == SEED_USER["email"]))
         ).scalar_one_or_none()
 
         if existing_user:
-            print(f"  ℹ️  User {SEED_USER['email']} already exists, skipping user creation")
+            print(
+                f"  ℹ️  User {SEED_USER['email']} already exists, skipping user creation"
+            )
             user = existing_user
         else:
             user = User(
@@ -367,6 +367,7 @@ async def seed() -> None:
             )
 
             from app.services.wiki_parser import generate_excerpt
+
             content = note_data["content"]
             excerpt = generate_excerpt(content)
             slug = slugify(note_data["title"], max_length=500)
@@ -390,7 +391,9 @@ async def seed() -> None:
             for tag_name in note_data.get("tags", []):
                 if tag_name in tag_map:
                     await db.execute(
-                        note_tags.insert().values(note_id=note.id, tag_id=tag_map[tag_name].id)
+                        note_tags.insert().values(
+                            note_id=note.id, tag_id=tag_map[tag_name].id
+                        )
                     )
 
             note_map[note_data["title"]] = note
@@ -399,7 +402,7 @@ async def seed() -> None:
 
         await db.commit()
         print("\n✨ Database seeded successfully!")
-        print(f"\n  Login credentials:")
+        print("\n  Login credentials:")
         print(f"  Email:    {SEED_USER['email']}")
         print(f"  Password: {SEED_USER['password']}")
 

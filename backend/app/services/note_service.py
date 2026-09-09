@@ -21,10 +21,10 @@ from app.schemas.notes import (
     NoteCreate,
     NoteDetail,
     NoteListResponse,
-    NoteSummary,
-    NoteUpdate,
     NoteRevisionDetail,
     NoteRevisionSummary,
+    NoteSummary,
+    NoteUpdate,
     SearchResponse,
     SearchResult,
     TagResponse,
@@ -85,7 +85,9 @@ class NoteService:
         note = await self.repo.get_by_id(note.id, user.id)
         return NoteDetail.model_validate(note)
 
-    async def update_note(self, note_id: int, user: User, data: NoteUpdate) -> NoteDetail:
+    async def update_note(
+        self, note_id: int, user: User, data: NoteUpdate
+    ) -> NoteDetail:
         note = await self.repo.get_by_id(note_id, user.id)
         self._assert_ownership(note, user.id)
 
@@ -121,6 +123,7 @@ class NoteService:
         # Use a query that includes deleted notes so trash items can be viewed.
         from sqlalchemy import select as sa_select
         from sqlalchemy.orm import selectinload as sel
+
         result = await self.db.execute(
             sa_select(Note)
             .where(Note.id == note_id, Note.user_id == user_id)
@@ -169,7 +172,9 @@ class NoteService:
         """Hard-delete a note (must already be in trash). Irreversible."""
         # Use a raw query to find the note even when is_deleted=True
         from sqlalchemy import select as sa_select
+
         from app.models.note import Note as NoteModel
+
         result = await self.db.execute(
             sa_select(NoteModel).where(
                 NoteModel.id == note_id,
@@ -183,8 +188,9 @@ class NoteService:
     async def restore_note(self, note_id: int, user_id: int) -> NoteDetail:
         # For trash we need to also find deleted notes
         from sqlalchemy import select
-        from app.models.note import Note as NoteModel
         from sqlalchemy.orm import selectinload
+
+        from app.models.note import Note as NoteModel
 
         result = await self.db.execute(
             select(NoteModel)
@@ -232,7 +238,9 @@ class NoteService:
     ) -> SearchResponse:
         start = time.perf_counter()
         offset = (page - 1) * page_size
-        notes, total = await self.repo.search(user_id, query, offset=offset, limit=page_size)
+        notes, total = await self.repo.search(
+            user_id, query, offset=offset, limit=page_size
+        )
         took_ms = (time.perf_counter() - start) * 1000
 
         results = [
@@ -249,9 +257,13 @@ class NoteService:
             )
             for n in notes
         ]
-        return SearchResponse(query=query, results=results, total=total, took_ms=round(took_ms, 2))
+        return SearchResponse(
+            query=query, results=results, total=total, took_ms=round(took_ms, 2)
+        )
 
-    async def get_revisions(self, note_id: int, user_id: int) -> list[NoteRevisionSummary]:
+    async def get_revisions(
+        self, note_id: int, user_id: int
+    ) -> list[NoteRevisionSummary]:
         note = await self.repo.get_by_id(note_id, user_id)
         self._assert_ownership(note, user_id)
         revisions = await self.repo.get_revisions(note_id)

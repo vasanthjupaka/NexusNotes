@@ -72,7 +72,9 @@ class Note(Base):
         onupdate=func.now(),
         nullable=False,
     )
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="notes")
@@ -84,7 +86,10 @@ class Note(Base):
         "Attachment", back_populates="note", lazy="select", cascade="all, delete-orphan"
     )
     revisions: Mapped[list["NoteRevision"]] = relationship(
-        "NoteRevision", back_populates="note", lazy="select", cascade="all, delete-orphan"
+        "NoteRevision",
+        back_populates="note",
+        lazy="select",
+        cascade="all, delete-orphan",
     )
     # Notes this note links TO (outgoing links)
     outgoing_links: Mapped[list["NoteLink"]] = relationship(

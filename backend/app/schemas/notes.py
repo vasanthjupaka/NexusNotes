@@ -3,14 +3,13 @@ NexusNotes — Pydantic Schemas: Notes, Folders, Tags
 """
 
 from datetime import datetime
-from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Tag Schemas
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 class TagCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
@@ -27,6 +26,7 @@ class TagResponse(BaseModel):
 # ──────────────────────────────────────────────────────────────────────────────
 # Folder Schemas
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 class FolderCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
@@ -57,6 +57,7 @@ FolderResponse.model_rebuild()
 # Note Schemas
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 class NoteCreate(BaseModel):
     title: str = Field(default="Untitled", max_length=500)
     content: str = Field(default="")
@@ -75,6 +76,7 @@ class NoteUpdate(BaseModel):
 
 class NoteSummary(BaseModel):
     """Lightweight note representation for list views — no full content."""
+
     id: int
     title: str
     slug: str
@@ -92,6 +94,7 @@ class NoteSummary(BaseModel):
 
 class NoteDetail(BaseModel):
     """Full note with content — used when opening a specific note."""
+
     id: int
     title: str
     slug: str
@@ -121,6 +124,7 @@ class NoteListResponse(BaseModel):
 # Note Revision Schemas
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 class NoteRevisionSummary(BaseModel):
     id: int
     note_id: int
@@ -143,6 +147,7 @@ class NoteRevisionDetail(BaseModel):
 # ──────────────────────────────────────────────────────────────────────────────
 # Backlinks / Graph Schemas
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 class BacklinkNote(BaseModel):
     id: int
@@ -174,6 +179,7 @@ class GraphResponse(BaseModel):
 # Search Schemas
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 class SearchResult(BaseModel):
     id: int
     title: str
@@ -202,6 +208,7 @@ class SearchResponse(BaseModel):
 # Attachment Schemas
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 class AttachmentResponse(BaseModel):
     id: int
     note_id: int | None
@@ -220,6 +227,7 @@ class AttachmentResponse(BaseModel):
 # ──────────────────────────────────────────────────────────────────────────────
 # Common Schemas
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 class MessageResponse(BaseModel):
     message: str

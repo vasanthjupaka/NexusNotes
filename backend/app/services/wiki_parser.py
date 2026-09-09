@@ -15,10 +15,11 @@ Why parse on save (not on read)?
 """
 
 import re
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.note import Note
 
+from app.models.note import Note
 
 # Regex: matches [[...]] with content that is not empty and doesn't contain newlines
 WIKI_LINK_PATTERN = re.compile(r"\[\[([^\[\]\n\r]+?)\]\]")
@@ -128,6 +129,7 @@ def generate_slug(title: str, note_id: int | None = None) -> str:
     Appends the note ID to guarantee uniqueness when provided.
     """
     from slugify import slugify
+
     base_slug = slugify(title, max_length=500, word_boundary=True)
     if not base_slug:
         base_slug = "untitled"

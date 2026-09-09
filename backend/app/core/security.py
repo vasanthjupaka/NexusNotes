@@ -10,11 +10,11 @@ Security principles applied here:
 - No secrets are logged
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from jose import JWTError, jwt
 import bcrypt
+from jose import JWTError, jwt
 
 from app.core.config import get_settings
 
@@ -29,7 +29,9 @@ def hash_password(plain_password: str) -> str:
 
     The salt is automatically generated and embedded in the hash.
     """
-    return bcrypt.hashpw(plain_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    return bcrypt.hashpw(plain_password.encode("utf-8"), bcrypt.gensalt()).decode(
+        "utf-8"
+    )
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -38,7 +40,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
     Constant-time comparison prevents timing attacks.
     """
-    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+    )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -64,7 +68,7 @@ def create_access_token(
         Signed JWT string.
     """
     settings = get_settings()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     expire = now + timedelta(minutes=settings.jwt_access_token_expire_minutes)
 
     payload: dict[str, Any] = {
@@ -91,7 +95,7 @@ def create_refresh_token(subject: str | int) -> str:
     Refresh tokens should be stored in httpOnly cookies.
     """
     settings = get_settings()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     expire = now + timedelta(days=settings.jwt_refresh_token_expire_days)
 
     payload: dict[str, Any] = {

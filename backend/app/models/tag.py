@@ -7,18 +7,21 @@ Tags are unique per user (same tag name can exist for different users).
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, Table, Column, Integer, func
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, String, Table, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-
 
 # Association table for many-to-many Note ↔ Tag
 note_tags = Table(
     "note_tags",
     Base.metadata,
-    Column("note_id", Integer, ForeignKey("notes.id", ondelete="CASCADE"), primary_key=True),
-    Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "note_id", Integer, ForeignKey("notes.id", ondelete="CASCADE"), primary_key=True
+    ),
+    Column(
+        "tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True
+    ),
 )
 
 

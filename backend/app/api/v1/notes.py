@@ -50,7 +50,12 @@ async def list_notes(
     )
 
 
-@router.post("", response_model=NoteDetail, status_code=status.HTTP_201_CREATED, summary="Create note")
+@router.post(
+    "",
+    response_model=NoteDetail,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create note",
+)
 async def create_note(
     data: NoteCreate,
     current_user: User = Depends(get_current_active_user),
@@ -95,7 +100,9 @@ async def delete_note(
     return MessageResponse(message="Note moved to trash")
 
 
-@router.post("/{note_id}/restore", response_model=NoteDetail, summary="Restore deleted note")
+@router.post(
+    "/{note_id}/restore", response_model=NoteDetail, summary="Restore deleted note"
+)
 async def restore_note(
     note_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -105,7 +112,11 @@ async def restore_note(
     return await service.restore_note(note_id, current_user.id)
 
 
-@router.delete("/{note_id}/permanent", response_model=MessageResponse, summary="Permanently delete note")
+@router.delete(
+    "/{note_id}/permanent",
+    response_model=MessageResponse,
+    summary="Permanently delete note",
+)
 async def permanent_delete_note(
     note_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -117,7 +128,9 @@ async def permanent_delete_note(
     return MessageResponse(message="Note permanently deleted")
 
 
-@router.get("/{note_id}/backlinks", response_model=list[BacklinkNote], summary="Get backlinks")
+@router.get(
+    "/{note_id}/backlinks", response_model=list[BacklinkNote], summary="Get backlinks"
+)
 async def get_backlinks(
     note_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -128,7 +141,11 @@ async def get_backlinks(
     return await service.get_backlinks(note_id, current_user.id)
 
 
-@router.get("/{note_id}/revisions", response_model=list[NoteRevisionSummary], summary="List revisions")
+@router.get(
+    "/{note_id}/revisions",
+    response_model=list[NoteRevisionSummary],
+    summary="List revisions",
+)
 async def list_revisions(
     note_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -138,7 +155,11 @@ async def list_revisions(
     return await service.get_revisions(note_id, current_user.id)
 
 
-@router.get("/{note_id}/revisions/{revision_id}", response_model=NoteRevisionDetail, summary="Get revision content")
+@router.get(
+    "/{note_id}/revisions/{revision_id}",
+    response_model=NoteRevisionDetail,
+    summary="Get revision content",
+)
 async def get_revision(
     note_id: int,
     revision_id: int,

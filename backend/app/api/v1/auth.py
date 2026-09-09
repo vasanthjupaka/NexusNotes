@@ -9,12 +9,9 @@ Endpoints:
   GET  /api/v1/auth/me        — Get current user profile
 """
 
-from fastapi import APIRouter, Depends, Response, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import TOKEN_TYPE_REFRESH, verify_token_type, create_access_token
 from app.db.session import get_db
 from app.dependencies.auth import get_current_active_user
 from app.models.user import User
@@ -26,7 +23,6 @@ from app.schemas.auth import (
     UserPublic,
 )
 from app.services.auth_service import AuthService
-from fastapi import HTTPException
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -79,7 +75,7 @@ async def login(
         key=REFRESH_TOKEN_COOKIE,
         value=refresh_token,
         httponly=True,
-        secure=True,   # Requires HTTPS in production
+        secure=True,  # Requires HTTPS in production
         samesite="lax",
         max_age=30 * 24 * 3600,  # 30 days
     )
@@ -121,7 +117,6 @@ async def refresh_token(
 
     Reads refresh token from httpOnly cookie.
     """
-    from fastapi import Request
     # This endpoint reads from cookie — handled in the actual request
     raise HTTPException(status_code=501, detail="Use cookie-based refresh")
 

@@ -17,7 +17,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.v1 import auth, health
 from app.core.config import get_settings
@@ -56,6 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Dispose the connection pool
     from app.db.session import engine
+
     await engine.dispose()
 
 
@@ -124,7 +124,7 @@ API requests are rate limited to 100 requests per 60 seconds by default.
 
     # Import and register remaining routers
     # (imported here to avoid circular imports at module load time)
-    from app.api.v1 import notes, folders, tags, attachments, search, graph
+    from app.api.v1 import attachments, folders, graph, notes, search, tags
 
     app.include_router(notes.router, prefix=API_PREFIX)
     app.include_router(folders.router, prefix=API_PREFIX)

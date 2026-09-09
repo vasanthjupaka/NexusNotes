@@ -1,7 +1,7 @@
 """NexusNotes — Folders API Router"""
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -9,7 +9,12 @@ from app.db.session import get_db
 from app.dependencies.auth import get_current_active_user
 from app.models.folder import Folder
 from app.models.user import User
-from app.schemas.notes import FolderCreate, FolderResponse, FolderUpdate, MessageResponse
+from app.schemas.notes import (
+    FolderCreate,
+    FolderResponse,
+    FolderUpdate,
+    MessageResponse,
+)
 
 router = APIRouter(prefix="/folders", tags=["Folders"])
 
@@ -41,7 +46,9 @@ async def create_folder(
     await db.flush()
     # Re-fetch with children eagerly loaded to avoid MissingGreenlet on lazy access.
     result = await db.execute(
-        select(Folder).where(Folder.id == folder.id).options(selectinload(Folder.children))
+        select(Folder)
+        .where(Folder.id == folder.id)
+        .options(selectinload(Folder.children))
     )
     folder = result.scalar_one()
     return FolderResponse.model_validate(folder)
@@ -69,7 +76,9 @@ async def update_folder(
     await db.flush()
     # Re-fetch with children eagerly loaded to avoid MissingGreenlet on lazy access.
     result = await db.execute(
-        select(Folder).where(Folder.id == folder.id).options(selectinload(Folder.children))
+        select(Folder)
+        .where(Folder.id == folder.id)
+        .options(selectinload(Folder.children))
     )
     folder = result.scalar_one()
     return FolderResponse.model_validate(folder)

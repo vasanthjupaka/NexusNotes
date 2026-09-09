@@ -11,6 +11,15 @@ requires-python = ">=3.12"
 [tool.ruff]
 target-version = "py312"
 line-length = 88
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "alembic/versions",
+]
+
+[tool.ruff.lint]
 select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings
@@ -25,18 +34,13 @@ select = [
 ignore = [
     "E501",   # line too long — handled by Black
     "B008",   # do not perform function calls in default arguments (FastAPI uses this)
+    "B904",   # exception chaining — style choice
     "ARG001", # unused function argument — common in FastAPI dependencies
     "ARG002", # unused method argument
-]
-exclude = [
-    ".git",
-    ".venv",
-    "venv",
-    "__pycache__",
-    "alembic/versions",
+    "F821",   # undefined name — false positive for SQLAlchemy forward-ref strings in Mapped[]
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-third-party = ["fastapi", "sqlalchemy", "pydantic", "boto3", "jose", "passlib"]
 
 [tool.black]

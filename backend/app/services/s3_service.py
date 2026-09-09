@@ -17,7 +17,6 @@ Security:
 """
 
 import io
-import mimetypes
 import uuid
 from typing import Any
 
@@ -85,7 +84,9 @@ class S3Service:
         - Overwriting existing objects
         """
         # Sanitize filename: keep only safe characters
-        safe_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_")
+        safe_chars = set(
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_"
+        )
         sanitized = "".join(c if c in safe_chars else "_" for c in original_filename)
         sanitized = sanitized[:100]  # Truncate to reasonable length
 
@@ -158,7 +159,9 @@ class S3Service:
             )
             return url
         except ClientError as exc:
-            logger.error("presigned_url_generation_failed", key=object_key, error=str(exc))
+            logger.error(
+                "presigned_url_generation_failed", key=object_key, error=str(exc)
+            )
             raise
 
     async def delete_object(self, object_key: str) -> None:
@@ -217,6 +220,7 @@ def validate_image_upload(
     # 2. Extension check
     allowed_extensions = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
     import os
+
     _, ext = os.path.splitext(original_filename.lower())
     if ext not in allowed_extensions:
         raise ValueError(f"File extension '{ext}' is not allowed")

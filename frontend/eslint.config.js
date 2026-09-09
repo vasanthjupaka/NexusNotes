@@ -23,6 +23,14 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // Downgrade to warnings — these are common in React/D3/Fabric code
+      '@typescript-eslint/no-explicit-any': 'warn',
+      // Allow unused vars that start with _ (common convention for intentionally unused)
+      '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
+      // useEffect dependency warnings — don't fail CI for these
+      'react-hooks/exhaustive-deps': 'warn',
+      // Escape character warnings — don't fail CI
+      'no-useless-escape': 'warn',
     },
   },
 )

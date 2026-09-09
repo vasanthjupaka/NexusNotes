@@ -97,7 +97,9 @@ async def ready() -> JSONResponse:
     duration_ms = (time.perf_counter() - start) * 1000
 
     status_str = "ready" if all_healthy else "not_ready"
-    http_status = status.HTTP_200_OK if all_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+    http_status = (
+        status.HTTP_200_OK if all_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+    )
 
     return JSONResponse(
         status_code=http_status,

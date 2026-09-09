@@ -29,7 +29,9 @@ class NoteLink(Base):
         # A source note can only link to a target once
         UniqueConstraint("source_note_id", "target_note_id", name="uq_note_links"),
         Index("idx_note_links_source", "source_note_id"),
-        Index("idx_note_links_target", "target_note_id"),  # Critical for backlink queries
+        Index(
+            "idx_note_links_target", "target_note_id"
+        ),  # Critical for backlink queries
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

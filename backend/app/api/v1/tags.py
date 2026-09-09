@@ -13,7 +13,9 @@ from app.schemas.notes import MessageResponse, TagCreate, TagResponse
 router = APIRouter(prefix="/tags", tags=["Tags"])
 
 
-@router.get("", response_model=list[TagResponse], summary="List all tags for current user")
+@router.get(
+    "", response_model=list[TagResponse], summary="List all tags for current user"
+)
 async def list_tags(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),

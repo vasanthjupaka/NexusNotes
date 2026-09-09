@@ -73,7 +73,7 @@ async def upload_attachment(
                 "original-filename": file.filename or "upload",
             },
         )
-    except Exception as exc:
+    except Exception:
         raise HTTPException(status_code=500, detail="Failed to upload file to storage")
 
     # Save metadata to database
@@ -100,7 +100,11 @@ async def upload_attachment(
     return response
 
 
-@router.get("/{attachment_id}", response_model=AttachmentResponse, summary="Get attachment with download URL")
+@router.get(
+    "/{attachment_id}",
+    response_model=AttachmentResponse,
+    summary="Get attachment with download URL",
+)
 async def get_attachment(
     attachment_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -125,7 +129,9 @@ async def get_attachment(
     return response
 
 
-@router.delete("/{attachment_id}", response_model=MessageResponse, summary="Delete attachment")
+@router.delete(
+    "/{attachment_id}", response_model=MessageResponse, summary="Delete attachment"
+)
 async def delete_attachment(
     attachment_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -148,7 +154,9 @@ async def delete_attachment(
     try:
         await s3.delete_object(attachment.object_key)
     except Exception:
-        raise HTTPException(status_code=500, detail="Failed to delete file from storage")
+        raise HTTPException(
+            status_code=500, detail="Failed to delete file from storage"
+        )
 
     # Delete from database
     await db.delete(attachment)

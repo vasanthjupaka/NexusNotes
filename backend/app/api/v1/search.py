@@ -30,4 +30,6 @@ async def search(
     in a future phase without changing the API contract.
     """
     service = NoteService(db)
-    return await service.search_notes(current_user.id, q, page=page, page_size=page_size)
+    return await service.search_notes(
+        current_user.id, q, page=page, page_size=page_size
+    )

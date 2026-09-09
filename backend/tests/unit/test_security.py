@@ -6,14 +6,14 @@ import pytest
 from jose import JWTError
 
 from app.core.security import (
+    TOKEN_TYPE_ACCESS,
+    TOKEN_TYPE_REFRESH,
     create_access_token,
     create_refresh_token,
     decode_token,
     get_token_subject,
     hash_password,
     verify_password,
-    TOKEN_TYPE_ACCESS,
-    TOKEN_TYPE_REFRESH,
 )
 
 

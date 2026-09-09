@@ -5,16 +5,16 @@ Database access layer for note operations.
 All queries are parameterized via SQLAlchemy ORM — no raw SQL interpolation.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from sqlalchemy import Select, func, select, update, and_, or_, delete
+from sqlalchemy import Select, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.note import Note
 from app.models.note_link import NoteLink
-from app.models.tag import Tag, note_tags
 from app.models.note_revision import NoteRevision
+from app.models.tag import note_tags
 
 
 class NoteRepository:
@@ -108,14 +108,14 @@ class NoteRepository:
         for key, value in kwargs.items():
             if value is not None or key in ("folder_id",):
                 setattr(note, key, value)
-        note.updated_at = datetime.now(timezone.utc)
+        note.updated_at = datetime.now(UTC)
         await self.db.flush()
         await self.db.refresh(note)
         return note
 
     async def soft_delete(self, note: Note) -> Note:
         note.is_deleted = True
-        note.deleted_at = datetime.now(timezone.utc)
+        note.deleted_at = datetime.now(UTC)
         await self.db.flush()
         return note
 
@@ -133,9 +133,7 @@ class NoteRepository:
     async def set_tags(self, note: Note, tag_ids: list[int]) -> None:
         """Replace all tags on a note."""
         # Clear existing
-        await self.db.execute(
-            delete(note_tags).where(note_tags.c.note_id == note.id)
-        )
+        await self.db.execute(delete(note_tags).where(note_tags.c.note_id == note.id))
         # Add new
         if tag_ids:
             await self.db.execute(
@@ -174,7 +172,9 @@ class NoteRepository:
         )
         return result.scalars().all()
 
-    async def get_all_for_graph(self, user_id: int) -> tuple[list[Note], list[NoteLink]]:
+    async def get_all_for_graph(
+        self, user_id: int
+    ) -> tuple[list[Note], list[NoteLink]]:
         """Fetch all non-deleted notes and their links for graph rendering."""
         notes_result = await self.db.execute(
             select(Note)
@@ -247,6 +247,7 @@ class NoteRepository:
         if len(query.strip()) < 3:
             # FULLTEXT requires minimum word length — use LIKE for short queries
             from sqlalchemy import or_
+
             base = select(Note).where(
                 Note.user_id == user_id,
                 Note.is_deleted == False,  # noqa: E712
@@ -257,6 +258,7 @@ class NoteRepository:
             )
         else:
             from sqlalchemy import text
+
             base = select(Note).where(
                 Note.user_id == user_id,
                 Note.is_deleted == False,  # noqa: E712

@@ -56,6 +56,7 @@ async def get_current_user(
 
     # Import here to avoid circular import
     from app.repositories.user_repository import UserRepository
+
     repo = UserRepository(db)
     user = await repo.get_by_id(user_id)
 
@@ -100,7 +101,9 @@ class PaginationParams:
         if page < 1:
             raise HTTPException(status_code=400, detail="page must be >= 1")
         if page_size < 1 or page_size > 100:
-            raise HTTPException(status_code=400, detail="page_size must be between 1 and 100")
+            raise HTTPException(
+                status_code=400, detail="page_size must be between 1 and 100"
+            )
         self.page = page
         self.page_size = page_size
 

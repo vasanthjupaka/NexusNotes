@@ -46,7 +46,7 @@ class Attachment(Base):
     bucket_name: Mapped[str] = mapped_column(String(255), nullable=False)
     content_type: Mapped[str] = mapped_column(String(100), nullable=False)
     file_size: Mapped[int] = mapped_column(Integer, nullable=False)  # bytes
-    width: Mapped[int | None] = mapped_column(Integer, nullable=True)   # pixels
+    width: Mapped[int | None] = mapped_column(Integer, nullable=True)  # pixels
     height: Mapped[int | None] = mapped_column(Integer, nullable=True)  # pixels
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

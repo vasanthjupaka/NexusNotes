@@ -14,9 +14,9 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserPublic
-from app.models.user import User
 
 
 class AuthService:
@@ -88,6 +88,7 @@ class AuthService:
         await self.user_repo.update_last_login(user.id)
 
         from app.core.config import get_settings
+
         settings = get_settings()
 
         access_token = create_access_token(user.id)

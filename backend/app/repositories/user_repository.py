@@ -5,6 +5,8 @@ Database access layer for user operations.
 Contains only data access logic — no business logic.
 """
 
+from datetime import UTC
+
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,9 +22,7 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     async def get_by_email(self, email: str) -> User | None:
-        result = await self.db.execute(
-            select(User).where(User.email == email.lower())
-        )
+        result = await self.db.execute(select(User).where(User.email == email.lower()))
         return result.scalar_one_or_none()
 
     async def get_by_username(self, username: str) -> User | None:
@@ -51,11 +51,12 @@ class UserRepository:
         return user
 
     async def update_last_login(self, user_id: int) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
+
         await self.db.execute(
             update(User)
             .where(User.id == user_id)
-            .values(last_login_at=datetime.now(timezone.utc))
+            .values(last_login_at=datetime.now(UTC))
         )
 
     async def update(self, user: User, **kwargs) -> User:

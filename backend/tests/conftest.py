@@ -4,16 +4,17 @@ Pytest configuration and shared fixtures for NexusNotes backend tests.
 
 import asyncio
 from collections.abc import AsyncGenerator
+
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import get_settings
+from app.core.security import create_access_token, hash_password
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import create_app
 from app.models.user import User
-from app.core.security import hash_password, create_access_token
 
 # Clear settings cache so CI environment variables (JWT_SECRET, DATABASE_URL, etc.)
 # are picked up instead of any stale module-level cached instance.

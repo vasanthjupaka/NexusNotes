@@ -7,14 +7,14 @@ Usage:
 """
 
 import asyncio
-import sys
 import os
+import sys
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.models import Base
 from app.db.session import engine
+from app.models import Base
 
 
 async def init_db() -> None:

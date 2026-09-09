@@ -29,7 +29,7 @@ def test_generate_excerpt():
     # My Heading
     This is **bold** text and `inline code`.
     See [[AWS EC2]] for details.
-    
+
     ```python
     print("hello")
     ```

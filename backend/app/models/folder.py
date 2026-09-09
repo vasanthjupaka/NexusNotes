@@ -7,7 +7,7 @@ Supports nested folders via self-referential parent_id.
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
+from sqlalchemy import DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -37,7 +37,9 @@ class Folder(Base):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="folders")
-    notes: Mapped[list["Note"]] = relationship("Note", back_populates="folder", lazy="select")
+    notes: Mapped[list["Note"]] = relationship(
+        "Note", back_populates="folder", lazy="select"
+    )
     # Self-referential children
     children: Mapped[list["Folder"]] = relationship(
         "Folder",

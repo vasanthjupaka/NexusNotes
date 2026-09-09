@@ -12,10 +12,10 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Auth Schemas
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_-]+$")
@@ -56,8 +56,10 @@ class RefreshRequest(BaseModel):
 # User Schemas
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 class UserPublic(BaseModel):
     """Safe user data — NEVER includes password_hash."""
+
     id: int
     username: str
     email: str

@@ -1,8 +1,6 @@
 """NexusNotes — SQLAlchemy Declarative Base"""
 
-from sqlalchemy.orm import DeclarativeBase, MappedColumn
-from sqlalchemy import DateTime, func
-from datetime import datetime
+from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
@@ -12,4 +10,5 @@ class Base(DeclarativeBase):
     All models inheriting from Base are automatically included
     in Alembic migration autogeneration.
     """
+
     pass

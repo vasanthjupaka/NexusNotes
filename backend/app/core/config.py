@@ -10,7 +10,7 @@ NEVER hardcode secrets here. Use environment variables.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import AnyHttpUrl, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -46,9 +46,7 @@ class Settings(BaseSettings):
     # ──────────────────────────────────────────────────────────────────────────
     # Database
     # ──────────────────────────────────────────────────────────────────────────
-    database_url: str = (
-        "mysql+aiomysql://nexusnotes:changeme@localhost:3306/nexusnotes"
-    )
+    database_url: str = "mysql+aiomysql://nexusnotes:changeme@localhost:3306/nexusnotes"
 
     # ──────────────────────────────────────────────────────────────────────────
     # Authentication (JWT)
@@ -73,6 +71,7 @@ class Settings(BaseSettings):
         v = v.strip()
         if v.startswith("[") and v.endswith("]"):
             import json
+
             try:
                 return ",".join(json.loads(v))
             except Exception:
@@ -109,6 +108,7 @@ class Settings(BaseSettings):
         v = v.strip()
         if v.startswith("[") and v.endswith("]"):
             import json
+
             try:
                 return ",".join(json.loads(v))
             except Exception:

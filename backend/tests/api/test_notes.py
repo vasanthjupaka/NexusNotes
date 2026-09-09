@@ -13,7 +13,9 @@ async def test_create_and_get_note(client: AsyncClient, auth_headers):
         "title": "AWS S3 Architecture",
         "content": "# AWS S3\nObject storage for cloud applications.",
     }
-    create_res = await client.post("/api/v1/notes", json=create_payload, headers=auth_headers)
+    create_res = await client.post(
+        "/api/v1/notes", json=create_payload, headers=auth_headers
+    )
     assert create_res.status_code == 201
     note_a = create_res.json()
     assert note_a["title"] == "AWS S3 Architecture"
@@ -80,7 +82,9 @@ async def test_note_soft_delete_and_restore(client: AsyncClient, auth_headers):
     assert any(n["id"] == note_id for n in trash_res.json()["items"])
 
     # Restore note
-    restore_res = await client.post(f"/api/v1/notes/{note_id}/restore", headers=auth_headers)
+    restore_res = await client.post(
+        f"/api/v1/notes/{note_id}/restore", headers=auth_headers
+    )
     assert restore_res.status_code == 200
     assert restore_res.json()["is_deleted"] is False
 
@@ -103,7 +107,9 @@ async def test_note_revisions(client: AsyncClient, auth_headers):
     )
 
     # Get revision list
-    rev_res = await client.get(f"/api/v1/notes/{note_id}/revisions", headers=auth_headers)
+    rev_res = await client.get(
+        f"/api/v1/notes/{note_id}/revisions", headers=auth_headers
+    )
     assert rev_res.status_code == 200
     revisions = rev_res.json()
     assert len(revisions) == 2
